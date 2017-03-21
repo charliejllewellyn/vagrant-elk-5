@@ -25,6 +25,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 5601, host: 5601
   config.vm.network "forwarded_port", guest: 9200, host: 9200
   config.vm.network "forwarded_port", guest: 9300, host: 9300
+  config.vm.network "forwarded_port", guest: 4000, host: 4000
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -60,13 +61,16 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
+  config.vm.provision "file", source: "elastic.repo", destination: "/home/vagrant/elastic.repo"
+  config.vm.provision "file", source: "elasticsearch.yml", destination: "/home/vagrant/elasticsearch.yml"
+  config.vm.provision "file", source: "kibana.yml", destination: "/home/vagrant/kibana.yml"
   config.vm.provision "shell", inline: <<-SHELL
      rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
-     cp /vagrant/elastic.repo /etc/yum.repos.d/
+     cp /home/vagrant/elastic.repo /etc/yum.repos.d/
      yum install -y java-headless elasticsearch kibana logstash filebeat
      sysctl -w vm.max_map_count=262144
-     cp /vagrant/elasticsearch.yml /etc/elasticsearch/
-     cp /vagrant/kibana.yml /etc/kibana
+     cp /home/vagrant/elasticsearch.yml /etc/elasticsearch/
+     cp /home/vagrant/kibana.yml /etc/kibana
      /usr/share/elasticsearch/bin/elasticsearch-plugin install x-pack
      /usr/share/kibana/bin/kibana-plugin install x-pack
      service elasticsearch start
